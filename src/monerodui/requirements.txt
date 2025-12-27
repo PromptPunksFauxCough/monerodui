@@ -1,0 +1,5 @@
+jnius==1.1.0
+Kivy==2.3.0
+Kivy_examples==2.3.1
+kivymd==2.0.1.dev0
+python_for_android==2024.1.21

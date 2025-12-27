@@ -1,0 +1,33 @@
+[tool.briefcase]
+project_name = "monerod UI"
+bundle = "org.monerodui"
+version = "0.1.0"
+url = "https://monerod.org/monerodui"
+license.file = "LICENSE"
+author = "Terry A. Davis"
+author_email = "terry@monerodui.org"
+
+[tool.briefcase.app.monerodui]
+formal_name = "monerod UI"
+description = "monerod UI"
+long_description = """Manage monerod.
+"""
+sources = [
+    "src/monerodui",
+    "desktop/binary/monerod",
+]
+
+requires = [
+    "Kivy==2.3.1",
+    "Kivy_examples==2.3.1",
+    "kivymd @ https://github.com/kivymd/KivyMD/archive/refs/heads/master.zip",
+]
+
+[tool.briefcase.app.monerodui.linux]
+system_requires = [
+    "pkg-config",
+    "libcairo2-dev",
+    "libgirepository1.0-dev",
+    "libffi-dev",
+]
+

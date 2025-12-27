@@ -1,0 +1,64 @@
+<MainScreen>:
+    md_bg_color: 0.2, 0.2, 0.2, 1
+    
+    MDBoxLayout:
+        orientation: "vertical"
+        
+        MDBoxLayout:
+            adaptive_height: True
+            padding: ["16dp", "16dp", "16dp", "8dp"]
+            
+            MDLabel:
+                text: app.title
+                font_style: "Headline"
+                role: "small"
+                adaptive_height: True
+                adaptive_width: True
+                theme_text_color: "Custom"
+                text_color: [1, 0.4, 0, 1]
+            
+            Widget:
+            
+            MDIconButton:
+                icon: "cog"
+                on_release: app.open_settings()
+                theme_text_color: "Custom"
+                text_color: [0.5, 0.5, 0.5, 1]
+        
+        MDScrollView:
+            do_scroll_x: False
+            
+            MDBoxLayout:
+                orientation: "vertical"
+                padding: ["16dp", "8dp", "16dp", "16dp"]
+                spacing: "16dp"
+                adaptive_height: True
+                
+                StatusCard:
+                    id: status_card
+                    on_storage_tapped: root._on_storage_tapped()
+                
+                NodeStatsCard:
+                    id: node_stats_card
+        
+        MDBoxLayout:
+            adaptive_height: True
+            padding: ["16dp", "8dp", "16dp", "16dp"]
+            
+            Widget:
+            
+            MDButton:
+                id: start_stop_btn
+                style: "filled"
+                theme_bg_color: "Custom"
+                md_bg_color: [1, 0.4, 0, 1]
+                on_release: root.on_start_stop()
+                
+                MDButtonText:
+                    id: start_stop_text
+                    text: "Start"
+                    theme_text_color: "Custom"
+                    text_color: [1, 1, 1, 1]
+                    bold: True
+            
+            Widget:

@@ -1,0 +1,133 @@
+<StatusRow>:
+    size_hint_y: None
+    height: "48dp"
+    spacing: "12dp"
+    padding: ["0dp", "8dp", "0dp", "8dp"]
+    MDIcon:
+        icon: root.icon
+        theme_text_color: "Custom"
+        text_color: [1, 0.4, 0, 1] if root.is_ok else app.theme_cls.errorColor
+        pos_hint: {"center_y": 0.5}
+        size_hint_x: None
+        width: "24dp"
+    MDLabel:
+        text: root.label
+        theme_text_color: "Custom"
+        text_color: [0.6, 0.6, 0.6, 1]
+        size_hint_x: 0.5
+        shorten: True
+        shorten_from: 'right'
+    MDLabel:
+        text: root.value
+        theme_text_color: "Custom"
+        text_color: [1, 1, 1, 1]
+        bold: True
+        size_hint_x: 0.5
+        shorten: True
+        shorten_from: 'right'
+
+<StatusCard>:
+    orientation: "vertical"
+    padding: "16dp"
+    spacing: "0dp"
+    adaptive_height: True
+    
+    style: "outlined"
+    theme_bg_color: "Custom"
+    md_bg_color: 0, 0, 0, 1
+    line_color: 0, 0, 0, 0
+    
+    MDBoxLayout:
+        size_hint_y: None
+        height: "40dp"
+        spacing: "8dp"
+        MDLabel:
+            text: "System Status"
+            font_style: "Title"
+            role: "medium"
+            pos_hint: {"center_y": 0.5}
+            theme_text_color: "Custom"
+            text_color: [1, 1, 1, 1]
+            adaptive_width: True
+        Widget:
+        MDLabel:
+            text: f"[ Running • {root.storage_value} ]" if root.is_running else ""
+            font_style: "Body"
+            role: "small"
+            pos_hint: {"center_y": 0.5}
+            halign: "right"
+            theme_text_color: "Custom"
+            text_color: [0.7, 0.7, 0.7, 1]
+            opacity: 0 if root.is_expanded else 1
+            adaptive_width: True
+        MDIconButton:
+            icon: "chevron-up" if root.is_expanded else "chevron-down"
+            pos_hint: {"center_y": 0.5}
+            on_release: root.toggle_expanded()
+            theme_text_color: "Custom"
+            text_color: [1, 1, 1, 1]
+
+    MDBoxLayout:
+        orientation: "vertical"
+        size_hint_y: None
+        height: self.minimum_height if root.is_expanded else "0dp"
+        opacity: 1 if root.is_expanded else 0
+        spacing: "8dp"
+        padding: ["0dp", "8dp", "0dp", "0dp"]
+
+        MDDivider:
+            size_hint_x: 1
+            size_hint_y: None
+            height: "1dp"
+            color: [0.2, 0.2, 0.2, 1]
+
+        StatusRow:
+            icon: "chip"
+            label: "Architecture"
+            value: root.arch_value
+            is_ok: root.arch_ok
+        
+        StatusRow:
+            icon: "application-cog"
+            label: "Binary"
+            value: root.binary_value
+            is_ok: root.binary_ok
+        
+        MDBoxLayout:
+            size_hint_y: None
+            height: "48dp"
+            spacing: "12dp"
+            padding: ["0dp", "8dp", "0dp", "8dp"]
+            
+            MDIcon:
+                icon: "harddisk"
+                theme_text_color: "Custom"
+                text_color: [1, 0.4, 0, 1] if root.storage_ok else app.theme_cls.errorColor
+                pos_hint: {"center_y": 0.5}
+                size_hint_x: None
+                width: "24dp"
+            MDLabel:
+                text: "Storage"
+                theme_text_color: "Custom"
+                text_color: [0.6, 0.6, 0.6, 1]
+                size_hint_x: 0.5
+            MDLabel:
+                text: root.storage_value
+                theme_text_color: "Custom"
+                text_color: [1, 1, 1, 1]
+                bold: True
+                size_hint_x: 0.5
+            MDIconButton:
+                icon: "chevron-right"
+                pos_hint: {"center_y": 0.5}
+                disabled: root.is_running
+                opacity: 0.5 if root.is_running else 1.0
+                on_release: root.dispatch("on_storage_tapped")
+                size_hint_x: None
+                width: "48dp"
+        
+        StatusRow:
+            icon: "play-circle" if root.is_running else "stop-circle"
+            label: "State"
+            value: root.state_value
+            is_ok: root.is_running

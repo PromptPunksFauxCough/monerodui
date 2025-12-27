@@ -1,0 +1,652 @@
+[
+    {
+        "type": "title",
+        "title": "Launcher"
+    },
+    {
+        "type": "string",
+        "title": "Extra Flags",
+        "desc": "Additional raw command-line flags (advanced)",
+        "section": "runtime",
+        "key": "extra_flags"
+    },
+    {
+        "type": "bool",
+        "title": "Auto Start",
+        "desc": "Automatically start daemon when app launches",
+        "section": "runtime",
+        "key": "auto_start"
+    },
+    {
+        "type": "bool",
+        "title": "Start on Boot",
+        "desc": "Automatically start the node when the device restarts (Requires permissions)",
+        "section": "runtime",
+        "key": "enable_boot"
+    },
+    {
+        "type": "title",
+        "title": "Notifications (Android)"
+    },
+    {
+        "type": "bool",
+        "title": "Block Notifications",
+        "desc": "Show notification on new block",
+        "section": "notify",
+        "key": "block_enabled"
+    },
+    {
+        "type": "bool",
+        "title": "Reorg Notifications",
+        "desc": "Show notification on chain reorganization",
+        "section": "notify",
+        "key": "reorg_enabled"
+    },
+    {
+        "type": "title",
+        "title": "Proxy / Tor"
+    },
+    {
+        "type": "string",
+        "title": "Proxy",
+        "desc": "SOCKS proxy for network traffic (ip:port, e.g. 127.0.0.1:9050)",
+        "section": "proxy",
+        "key": "address"
+    },
+    {
+        "type": "bool",
+        "title": "Allow DNS Leaks",
+        "desc": "Allow DNS queries outside of proxy",
+        "section": "proxy",
+        "key": "allow_dns_leaks"
+    },
+    {
+        "type": "string",
+        "title": "TX Proxy",
+        "desc": "Proxy for local txs: tor,ip:port[,max_conn][,disable_noise]",
+        "section": "proxy",
+        "key": "tx_proxy"
+    },
+    {
+        "type": "string",
+        "title": "Anonymous Inbound",
+        "desc": "Hidden service: address,bind:port[,max_conn]",
+        "section": "proxy",
+        "key": "anonymous_inbound"
+    },
+    {
+        "type": "title",
+        "title": "Network"
+    },
+    {
+        "type": "options",
+        "title": "Network Type",
+        "desc": "Select which network to connect to",
+        "section": "network",
+        "key": "network_type",
+        "options": ["mainnet", "testnet", "stagenet"]
+    },
+    {
+        "type": "bool",
+        "title": "Offline Mode",
+        "desc": "Do not listen for peers, nor connect to any",
+        "section": "network",
+        "key": "offline"
+    },
+    {
+        "type": "bool",
+        "title": "No Sync",
+        "desc": "Don't synchronize the blockchain with other peers",
+        "section": "network",
+        "key": "no_sync"
+    },
+    {
+        "type": "bool",
+        "title": "Public Node",
+        "desc": "Allow other users to use this node as a remote (restricted RPC, view-only)",
+        "section": "network",
+        "key": "public_node"
+    },
+    {
+        "type": "bool",
+        "title": "Sync Pruned Blocks",
+        "desc": "Allow syncing from nodes with only pruned blocks",
+        "section": "network",
+        "key": "sync_pruned_blocks"
+    },
+    {
+        "type": "bool",
+        "title": "Pad Transactions",
+        "desc": "Pad relayed transactions to defend against traffic volume analysis",
+        "section": "network",
+        "key": "pad_transactions"
+    },
+    {
+        "type": "title",
+        "title": "Blockchain"
+    },
+    {
+        "type": "bool",
+        "title": "Prune Blockchain",
+        "desc": "Enable blockchain pruning to save disk space",
+        "section": "blockchain",
+        "key": "prune"
+    },
+    {
+        "type": "options",
+        "title": "DB Sync Mode",
+        "desc": "Database sync mode (safe is slower but safer)",
+        "section": "blockchain",
+        "key": "db_sync_mode",
+        "options": ["fast:async:250000000bytes", "safe:sync", "fastest:async"]
+    },
+    {
+        "type": "bool",
+        "title": "DB Salvage",
+        "desc": "Try to salvage corrupted blockchain database",
+        "section": "blockchain",
+        "key": "db_salvage"
+    },
+    {
+        "type": "numeric",
+        "title": "Block Sync Size",
+        "desc": "Blocks to sync at once (0 = adaptive)",
+        "section": "blockchain",
+        "key": "block_sync_size"
+    },
+    {
+        "type": "bool",
+        "title": "Fast Block Sync",
+        "desc": "Use embedded block hashes for faster sync",
+        "section": "blockchain",
+        "key": "fast_block_sync"
+    },
+    {
+        "type": "bool",
+        "title": "Keep Alt Blocks",
+        "desc": "Keep alternative blocks on restart",
+        "section": "blockchain",
+        "key": "keep_alt_blocks"
+    },
+    {
+        "type": "numeric",
+        "title": "Max Txpool Weight (bytes)",
+        "desc": "Maximum transaction pool weight (default: 648000000)",
+        "section": "blockchain",
+        "key": "max_txpool_weight"
+    },
+    {
+        "type": "title",
+        "title": "RPC Server"
+    },
+    {
+        "type": "string",
+        "title": "RPC Bind IP",
+        "desc": "IP address for RPC server (default: 127.0.0.1)",
+        "section": "rpc",
+        "key": "bind_ip"
+    },
+    {
+        "type": "numeric",
+        "title": "RPC Bind Port",
+        "desc": "Port for RPC server (default: 18081)",
+        "section": "rpc",
+        "key": "bind_port"
+    },
+    {
+        "type": "string",
+        "title": "Restricted RPC Bind IP",
+        "desc": "IP for restricted RPC server",
+        "section": "rpc",
+        "key": "restricted_bind_ip"
+    },
+    {
+        "type": "numeric",
+        "title": "Restricted RPC Port",
+        "desc": "Port for restricted RPC server",
+        "section": "rpc",
+        "key": "restricted_bind_port"
+    },
+    {
+        "type": "bool",
+        "title": "Restricted RPC",
+        "desc": "Restrict RPC to view-only commands, hide sensitive data",
+        "section": "rpc",
+        "key": "restricted"
+    },
+    {
+        "type": "bool",
+        "title": "Use IPv6",
+        "desc": "Allow IPv6 for RPC connections",
+        "section": "rpc",
+        "key": "use_ipv6"
+    },
+    {
+        "type": "string",
+        "title": "RPC Login",
+        "desc": "username:password for RPC authentication",
+        "section": "rpc",
+        "key": "login"
+    },
+    {
+        "type": "bool",
+        "title": "Confirm External Bind",
+        "desc": "Confirm binding RPC to non-loopback address (required for external access)",
+        "section": "rpc",
+        "key": "confirm_external_bind"
+    },
+    {
+        "type": "string",
+        "title": "CORS Origins",
+        "desc": "Comma-separated origins for cross-origin resource sharing",
+        "section": "rpc",
+        "key": "access_control_origins"
+    },
+    {
+        "type": "numeric",
+        "title": "Max Connections",
+        "desc": "Maximum total RPC connections permitted (default: 100)",
+        "section": "rpc",
+        "key": "max_connections"
+    },
+    {
+        "type": "bool",
+        "title": "Disable RPC Ban",
+        "desc": "Do not ban hosts on RPC errors",
+        "section": "rpc",
+        "key": "disable_ban"
+    },
+    {
+        "type": "title",
+        "title": "P2P Settings"
+    },
+    {
+        "type": "string",
+        "title": "P2P Bind IP (IPv4)",
+        "desc": "Interface for p2p network protocol",
+        "section": "p2p",
+        "key": "bind_ip"
+    },
+    {
+        "type": "numeric",
+        "title": "P2P Bind Port",
+        "desc": "Port for p2p network protocol (default: 18080)",
+        "section": "p2p",
+        "key": "bind_port"
+    },
+    {
+        "type": "bool",
+        "title": "Use IPv6",
+        "desc": "Enable IPv6 for p2p connections",
+        "section": "p2p",
+        "key": "use_ipv6"
+    },
+    {
+        "type": "numeric",
+        "title": "External Port",
+        "desc": "External port for p2p if using NAT/port forwarding (0 = disabled)",
+        "section": "p2p",
+        "key": "external_port"
+    },
+    {
+        "type": "numeric",
+        "title": "Max Out Peers",
+        "desc": "Maximum number of outgoing peer connections (-1 = default)",
+        "section": "p2p",
+        "key": "out_peers"
+    },
+    {
+        "type": "numeric",
+        "title": "Max In Peers",
+        "desc": "Maximum number of incoming peer connections (-1 = default)",
+        "section": "p2p",
+        "key": "in_peers"
+    },
+    {
+        "type": "numeric",
+        "title": "Max Connections Per IP",
+        "desc": "Maximum p2p connections allowed from same IP address",
+        "section": "p2p",
+        "key": "max_connections_per_ip"
+    },
+    {
+        "type": "bool",
+        "title": "Hide My Port",
+        "desc": "Do not announce yourself as peerlist candidate",
+        "section": "p2p",
+        "key": "hide_my_port"
+    },
+    {
+        "type": "bool",
+        "title": "Allow Local IP",
+        "desc": "Allow local IP addresses in peer list (debug)",
+        "section": "p2p",
+        "key": "allow_local_ip"
+    },
+    {
+        "type": "string",
+        "title": "Add Priority Nodes",
+        "desc": "Peers to connect to and keep open (comma-separated)",
+        "section": "p2p",
+        "key": "priority_nodes"
+    },
+    {
+        "type": "string",
+        "title": "Add Exclusive Nodes",
+        "desc": "Connect ONLY to these peers (comma-separated, overrides other peer options)",
+        "section": "p2p",
+        "key": "exclusive_nodes"
+    },
+    {
+        "type": "string",
+        "title": "Seed Nodes",
+        "desc": "Nodes to retrieve peer addresses from (comma-separated)",
+        "section": "p2p",
+        "key": "seed_nodes"
+    },
+    {
+        "type": "string",
+        "title": "Ban List File",
+        "desc": "Path to file containing banned IPs (one per line)",
+        "section": "p2p",
+        "key": "ban_list"
+    },
+    {
+        "type": "title",
+        "title": "Bandwidth Limits"
+    },
+    {
+        "type": "numeric",
+        "title": "Upload Limit (kB/s)",
+        "desc": "Maximum upload rate in kB/s (default: 8192)",
+        "section": "bandwidth",
+        "key": "limit_rate_up"
+    },
+    {
+        "type": "numeric",
+        "title": "Download Limit (kB/s)",
+        "desc": "Maximum download rate in kB/s (default: 32768)",
+        "section": "bandwidth",
+        "key": "limit_rate_down"
+    },
+    {
+        "type": "title",
+        "title": "RPC SSL"
+    },
+    {
+        "type": "options",
+        "title": "SSL Mode",
+        "desc": "Enable SSL on RPC connections",
+        "section": "rpcssl",
+        "key": "mode",
+        "options": ["autodetect", "enabled", "disabled"]
+    },
+    {
+        "type": "string",
+        "title": "SSL Private Key",
+        "desc": "Path to PEM format private key",
+        "section": "rpcssl",
+        "key": "private_key"
+    },
+    {
+        "type": "string",
+        "title": "SSL Certificate",
+        "desc": "Path to PEM format certificate",
+        "section": "rpcssl",
+        "key": "certificate"
+    },
+    {
+        "type": "string",
+        "title": "CA Certificates",
+        "desc": "Path to file with CA certificate(s) to replace system CAs",
+        "section": "rpcssl",
+        "key": "ca_certificates"
+    },
+    {
+        "type": "bool",
+        "title": "Allow Any Cert",
+        "desc": "Allow any peer certificate (insecure)",
+        "section": "rpcssl",
+        "key": "allow_any_cert"
+    },
+    {
+        "type": "bool",
+        "title": "Allow Chained",
+        "desc": "Allow user chain certificates",
+        "section": "rpcssl",
+        "key": "allow_chained"
+    },
+    {
+        "type": "title",
+        "title": "ZMQ"
+    },
+    {
+        "type": "bool",
+        "title": "Disable ZMQ",
+        "desc": "Disable ZMQ RPC server",
+        "section": "zmq",
+        "key": "disabled"
+    },
+    {
+        "type": "string",
+        "title": "ZMQ Bind IP",
+        "desc": "IP for ZMQ RPC server (default: 127.0.0.1)",
+        "section": "zmq",
+        "key": "bind_ip"
+    },
+    {
+        "type": "numeric",
+        "title": "ZMQ Bind Port",
+        "desc": "Port for ZMQ RPC server (default: 18082)",
+        "section": "zmq",
+        "key": "bind_port"
+    },
+    {
+        "type": "string",
+        "title": "ZMQ Pub Address",
+        "desc": "Address for ZMQ pub (tcp://ip:port or ipc://path)",
+        "section": "zmq",
+        "key": "pub"
+    },
+    {
+        "type": "title",
+        "title": "Bootstrap Daemon"
+    },
+    {
+        "type": "string",
+        "title": "Bootstrap Address",
+        "desc": "URL of bootstrap daemon for wallets while syncing ('auto' for public nodes)",
+        "section": "bootstrap",
+        "key": "address"
+    },
+    {
+        "type": "string",
+        "title": "Bootstrap Login",
+        "desc": "username:password for bootstrap daemon",
+        "section": "bootstrap",
+        "key": "login"
+    },
+    {
+        "type": "string",
+        "title": "Bootstrap Proxy",
+        "desc": "SOCKS proxy for bootstrap connections (ip:port)",
+        "section": "bootstrap",
+        "key": "proxy"
+    },
+    {
+        "type": "title",
+        "title": "DNS & Checkpoints"
+    },
+    {
+        "type": "bool",
+        "title": "Enforce DNS Checkpoints",
+        "desc": "Enforce checkpoints retrieved from DNS",
+        "section": "dns",
+        "key": "enforce_checkpoints"
+    },
+    {
+        "type": "bool",
+        "title": "Disable DNS Checkpoints",
+        "desc": "Do not retrieve checkpoints from DNS",
+        "section": "dns",
+        "key": "disable_checkpoints"
+    },
+    {
+        "type": "bool",
+        "title": "Enable DNS Blocklist",
+        "desc": "Apply realtime blocklist from DNS",
+        "section": "dns",
+        "key": "enable_blocklist"
+    },
+    {
+        "type": "options",
+        "title": "Check Updates",
+        "desc": "How to handle new version notifications",
+        "section": "dns",
+        "key": "check_updates",
+        "options": ["notify", "disabled", "download", "update"]
+    },
+    {
+        "type": "title",
+        "title": "UPnP / NAT"
+    },
+    {
+        "type": "options",
+        "title": "UPnP Mode",
+        "desc": "UPnP port mapping behavior",
+        "section": "nat",
+        "key": "igd",
+        "options": ["delayed", "enabled", "disabled"]
+    },
+    {
+        "type": "title",
+        "title": "Mining"
+    },
+    {
+        "type": "string",
+        "title": "Mining Address",
+        "desc": "Wallet address to mine to",
+        "section": "mining",
+        "key": "address"
+    },
+    {
+        "type": "numeric",
+        "title": "Mining Threads",
+        "desc": "Number of mining threads",
+        "section": "mining",
+        "key": "threads"
+    },
+    {
+        "type": "bool",
+        "title": "Background Mining",
+        "desc": "Enable background mining",
+        "section": "mining",
+        "key": "bg_enable"
+    },
+    {
+        "type": "bool",
+        "title": "Ignore Battery",
+        "desc": "Mine on battery (assume plugged in if status unknown)",
+        "section": "mining",
+        "key": "bg_ignore_battery"
+    },
+    {
+        "type": "numeric",
+        "title": "Idle Threshold (%)",
+        "desc": "Minimum idle percentage to start background mining",
+        "section": "mining",
+        "key": "bg_idle_threshold"
+    },
+    {
+        "type": "numeric",
+        "title": "Miner CPU Target (%)",
+        "desc": "Maximum CPU usage for background miner",
+        "section": "mining",
+        "key": "bg_miner_target"
+    },
+    {
+        "type": "title",
+        "title": "Logging"
+    },
+    {
+        "type": "string",
+        "title": "Log File",
+        "desc": "Path to log file (leave empty for default)",
+        "section": "logging",
+        "key": "file"
+    },
+    {
+        "type": "options",
+        "title": "Log Level",
+        "desc": "Logging verbosity",
+        "section": "logging",
+        "key": "level",
+        "options": ["0", "1", "2", "3", "4"]
+    },
+    {
+        "type": "numeric",
+        "title": "Max Log Size (bytes)",
+        "desc": "Maximum log file size before rotation (default: 104850000)",
+        "section": "logging",
+        "key": "max_file_size"
+    },
+    {
+        "type": "numeric",
+        "title": "Max Log Files",
+        "desc": "Maximum rotated log files to keep (0 = unlimited)",
+        "section": "logging",
+        "key": "max_files"
+    },
+    {
+        "type": "title",
+        "title": "Performance"
+    },
+    {
+        "type": "numeric",
+        "title": "Max Concurrency",
+        "desc": "Max threads for parallel jobs (0 = auto)",
+        "section": "performance",
+        "key": "max_concurrency"
+    },
+    {
+        "type": "numeric",
+        "title": "Prep Blocks Threads",
+        "desc": "Threads for preparing block hashes (default: 4)",
+        "section": "performance",
+        "key": "prep_blocks_threads"
+    },
+    {
+        "type": "title",
+        "title": "Advanced"
+    },
+    {
+        "type": "string",
+        "title": "Config File",
+        "desc": "Path to external config file",
+        "section": "advanced",
+        "key": "config_file"
+    },
+    {
+        "type": "string",
+        "title": "Data Directory",
+        "desc": "Custom data directory path",
+        "section": "advanced",
+        "key": "data_dir"
+    },
+    {
+        "type": "bool",
+        "title": "Non-Interactive",
+        "desc": "Run in non-interactive mode",
+        "section": "advanced",
+        "key": "non_interactive"
+    },
+    {
+        "type": "string",
+        "title": "Extra Messages File",
+        "desc": "File with extra messages for coinbase transactions",
+        "section": "advanced",
+        "key": "extra_messages_file"
+    }
+]
+
+
