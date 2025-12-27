@@ -242,10 +242,6 @@ Contributions are welcome! Please:
 4. Test on both Android and Desktop
 5. Submit a pull request
 
-## License
-
-[Specify your license here - e.g., MIT, GPL, etc.]
-
 ## Acknowledgments
 
 - [Monero Project](https://github.com/monero-project/monero) - The cryptocurrency software
