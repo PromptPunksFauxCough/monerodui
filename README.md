@@ -42,7 +42,7 @@ A cross-platform graphical user interface for running and managing a Monero daem
 ### Linux
 - Ubuntu 18.04+ / Debian 10+ / similar distribution
 - Python 3.11+
-- ~50 GiB free storage (for full blockchain)
+- ~300 GiB free storage (for full blockchain)
 
 ## Installation
 
