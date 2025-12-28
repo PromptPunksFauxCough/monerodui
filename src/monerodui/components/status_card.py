@@ -4,8 +4,12 @@ import os
 from pathlib import Path
 from kivy.lang import Builder
 from kivy.properties import StringProperty, BooleanProperty
+from kivy.core.clipboard import Clipboard
 from kivymd.uix.card import MDCard
 from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.snackbar import MDSnackbar, MDSnackbarText
+
+from monerodui.libs import NetworkInfo
 
 Builder.load_file(str(Path(__file__).parent.parent / "ui/components/status_card.kv"))
 
@@ -29,10 +33,33 @@ class StatusCard(MDCard):
     is_expanded = BooleanProperty(True)
     summary_text = StringProperty("Ready")
     all_ok = BooleanProperty(False)
+    ip_value = StringProperty("Detecting...")
+    ip_ok = BooleanProperty(False)
     
     def __init__(self, *args, **kwargs):
         self.register_event_type("on_storage_tapped")
         super().__init__(*args, **kwargs)
+        self._network_info = NetworkInfo()
+        self._detect_ip()
+    
+    def _detect_ip(self):
+        ip = self._network_info.get_device_ip()
+        if ip:
+            self.ip_value = ip
+            self.ip_ok = True
+        else:
+            self.ip_value = "No Ext Net"
+            self.ip_ok = False
+    
+    def copy_ip_to_clipboard(self):
+        if self.ip_ok and self.ip_value:
+            Clipboard.copy(self.ip_value)
+            MDSnackbar(
+                MDSnackbarText(text=f"Copied: {self.ip_value}"),
+                y="24dp",
+                pos_hint={"center_x": 0.5},
+                size_hint_x=0.8,
+            ).open()
     
     def on_storage_tapped(self):
         pass

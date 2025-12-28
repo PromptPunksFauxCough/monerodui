@@ -5,6 +5,7 @@ from .process_manager import ProcessManager, ProcessState
 from .node_stats import NodeStatsPoller, NodeStats, VersionInfo
 from .version_checker import VersionChecker, BinaryVersion
 from .update_checker import UpdateChecker, UpdateStatus
+from .network_info import NetworkInfo
 
 __all__ = [
     "ArchDetector",
@@ -17,4 +18,5 @@ __all__ = [
     "BinaryVersion",
     "UpdateChecker",
     "UpdateStatus",
+    "NetworkInfo",
 ]
