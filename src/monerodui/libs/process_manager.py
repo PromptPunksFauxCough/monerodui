@@ -169,7 +169,7 @@ class ProcessManager:
             
             if self._is_android:
                 arch = platform.machine().lower()
-                if "aarch64" in arch or "arm64" in arch or "v8" in arch:
+                if "aarch64" in arch or "arm64" in arch or ("v8" in arch and "v8l" not in arch):
                     linker = "/system/bin/linker64"
                 else:
                     linker = "/system/bin/linker"
