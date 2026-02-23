@@ -36,7 +36,7 @@ class UpdateStatus:
 class UpdateChecker:
     """Checks for updates via MoneroPulse DNS-over-HTTPS."""
     
-    DNS_URL = "https://dns.google/resolve?name=updates.moneropulse.org&type=TXT"
+    DNS_URL = "https://dns.nextdns.io/resolve?name=updates.moneropulse.org&type=TXT"
     
     def __init__(self, version_checker: VersionChecker, is_android: bool = False, arch: str = "amd64"):
         self._version_checker = version_checker
@@ -87,7 +87,7 @@ class UpdateChecker:
                 from jnius import autoclass
                 URL = autoclass('java.net.URL')
                 
-                url = URL("https://dns.google/resolve?name=updates.moneropulse.org&type=TXT")
+                url = URL("https://dns.nextdns.io/resolve?name=updates.moneropulse.org&type=TXT")
                 conn = url.openConnection()
                 stream = conn.getInputStream()
                 reader = autoclass('java.io.BufferedReader')(autoclass('java.io.InputStreamReader')(stream))
