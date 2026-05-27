@@ -54,7 +54,7 @@ FIRST_POLL_DELAY_SECS: float = 1.0
 
 def build_dashboard() -> None:
     """Build the dashboard UI inside the active NiceGUI page context."""
-    # M4: low-storage warning toast. Fires once across the server's
+    # Low-storage warning toast. Fires once across the server's
     # lifetime (state.storage_warning_shown is the latch). We deliver
     # it from here rather than from main.initialize() because ui.notify
     # is only valid inside a NiceGUI client context — calling it from

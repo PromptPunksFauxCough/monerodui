@@ -16,8 +16,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 # Imported from the existing libs package (which has zero Kivy deps).
-# Importing the type here keeps `state.last_stats` correctly typed even
-# though M1 never sets it (poll is M2).
+# Importing the type here keeps `state.last_stats` correctly typed.
 from monerodui.libs import NodeStats  # noqa: F401  (re-exported via type hint)
 
 
@@ -25,15 +24,14 @@ from monerodui.libs import NodeStats  # noqa: F401  (re-exported via type hint)
 class AppState:
     """Singleton holding all UI-observable state.
 
-    Lifecycle of each field:
-      - process_owned / external_node_running / node_state / last_stats /
-        last_poll_time / last_poll_error:
-            written by the stats poller / process_adapter (M2).
+    Where each field is written:
+      - process_owned / external_node_running / external_node_busy /
+        node_state / last_stats / last_poll_time / last_poll_error:
+            stats poller + process_adapter (per-tick in dashboard.py).
       - binary_version / update_status:
-            written by VersionChecker / UpdateChecker (M4). M1/M2 leave
-            them at defaults (M2 renders banners conditionally).
+            VersionChecker / UpdateChecker (one-shot on startup).
       - arch_*, binary_*, storage_*, device_ip:
-            populated once at startup by `main.initialize()` (M1).
+            populated once at startup by `main.initialize()`.
 
     `node_is_running` is a *derived* property: true if EITHER we own the
     process OR an external monerod is reachable via RPC. Use the two
@@ -41,7 +39,7 @@ class AppState:
     external-only).
     """
 
-    # ---- Node lifecycle (M2) ----
+    # ---- Node lifecycle ----
     # Did *we* spawn this monerod? Drives whether Stop is enabled.
     process_owned: bool = False
     # Is there an RPC-reachable monerod we did NOT spawn? Surfaces as
@@ -77,7 +75,7 @@ class AppState:
     # process_adapter on failed start/stop.
     last_error: Optional[str] = None
 
-    # ---- Live service references (M2 populates from main.initialize) ----
+    # ---- Live service references (populated from main.initialize) ----
     # Typed as Any to avoid an import cycle; concrete types are
     # monerodui.libs.ProcessManager, NodeStatsPoller, VersionChecker,
     # UpdateChecker.
@@ -86,31 +84,31 @@ class AppState:
     version_checker: Optional[Any] = None
     update_checker: Optional[Any] = None
 
-    # ---- Binary metadata (M4 writes, M1/M2 leave defaults) ----
+    # ---- Binary metadata (written by the version + update checks) ----
     binary_version: Optional[str] = None
     update_status: Optional[Any] = None  # UpdateStatus from libs.update_checker
 
-    # ---- Arch / binary readiness (M1 populates) ----
+    # ---- Arch / binary readiness (populated at startup) ----
     arch_supported: bool = False
     arch_name: str = "Unknown"
     binary_path: Optional[Path] = None
     binary_ready: bool = False
 
-    # ---- Storage check (M1 populates) ----
+    # ---- Storage check (populated at startup) ----
     storage_path: Optional[str] = None
     storage_free_gib: float = 0.0
     storage_ok: bool = False
-    # M4: one-shot flag so the low-storage warning toast fires exactly
-    # once across the server's lifetime — first browser to connect to
-    # the dashboard sees it; subsequent reloads / tabs do not. Reset
-    # to False if you want it to re-fire (e.g. after a config change
-    # that lowers free space).
+    # One-shot flag so the low-storage warning toast fires exactly once
+    # across the server's lifetime — first browser to connect to the
+    # dashboard sees it; subsequent reloads / tabs do not. Reset to
+    # False if you want it to re-fire (e.g. after a config change that
+    # lowers free space).
     storage_warning_shown: bool = False
 
-    # ---- Network (M1 populates) ----
+    # ---- Network (populated at startup) ----
     device_ip: str = "Unknown"
 
-    # ---- UI toggles (M5) ----
+    # ---- UI toggles ----
     # True = status card body hidden, only header + summary shown.
     # Toggled by the chevron button in the status card header.
     status_card_collapsed: bool = False
@@ -118,8 +116,6 @@ class AppState:
     # flag and refreshes the stats card. Process-lifetime (reset by
     # `service monerodui-web restart` since AppState is re-instantiated
     # at server startup) — intentionally doesn't persist across restarts.
-    # (The old version_banner_dismissed flag was removed when the
-    # version banner became a row in the System Status card.)
     update_banner_dismissed: bool = False
 
     # ---- Derived ----

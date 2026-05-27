@@ -188,7 +188,7 @@ def initialize() -> None:
     # 4. Storage check — port of _check_storage() from src/monerodui/main.py:769-787.
     _check_storage_for_state()
 
-    # 5. Wire live service references onto AppState (M2).
+    # 5. Wire live service references onto AppState.
     _wire_services()
 
     # 6. External-detection probe + auto-start.
@@ -349,7 +349,7 @@ def _check_storage_for_state() -> None:
         state.storage_ok = False
 
 
-# ---- M4: background version + update checks -----------------------------
+# ---- Background version + update checks ---------------------------------
 
 
 async def _kick_off_version_and_update_checks() -> None:
@@ -371,7 +371,7 @@ async def _kick_off_version_and_update_checks() -> None:
     return an empty UpdateStatus with `error="Local version unavailable"`.
     """
     if state.version_checker is None or state.update_checker is None:
-        logger.warning("version/update checkers not wired; skipping M4 checks")
+        logger.warning("version/update checkers not wired; skipping checks")
         return
     if not state.binary_ready or state.binary_path is None:
         logger.info("binary not ready; skipping version+update checks")
@@ -440,7 +440,7 @@ def index() -> None:
 
 @ui.page("/settings")
 def settings_route(focus: str = "") -> None:
-    """Render the full settings page (~70-field parity, M3).
+    """Render the full settings page.
 
     Optional `?focus=<section>.<field>` query param: after the page
     renders, scrolls to the named section and briefly flashes the
@@ -589,7 +589,7 @@ def main() -> None:
     # initialize() runs first (sync): config, arch, binary, storage,
     # services, external probe, auto-start.
     app.on_startup(initialize)
-    # Then the async M4 chain: version + update checks. Registered as a
+    # Then the async chain: version + update checks. Registered as a
     # separate startup hook so it runs *after* initialize() has wired
     # state.version_checker / state.update_checker. NiceGUI awaits each
     # hook in registration order on the asyncio loop.

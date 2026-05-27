@@ -7,7 +7,7 @@ Mirrors `src/monerodui/components/node_stats_card.py` +
 Sections (top to bottom):
   1. Header row: title + (right-aligned) network-type tag.
   2. Update banner (only when an update is available).
-  3. Update banner (M4 populates; rendered conditionally).
+  3. Update banner (rendered conditionally when an update is available).
   4. Offline message (when last_stats is None / status == 'offline').
   5. Sync status line + linear progress bar.
   6. OVERVIEW grid (3 cols): Connections, Block Height, Free Space.
@@ -308,7 +308,7 @@ def build_node_stats_card() -> None:
         # card (status_card.py "Monerod Version" row), so the dedicated
         # version banner that used to live here has been removed.
 
-        # ---- Update banner (M4 populates state.update_status) ----
+        # ---- Update banner (state.update_status driven) ----
         # state.update_banner_dismissed gates this the same way.
         upd = state.update_status
         if (

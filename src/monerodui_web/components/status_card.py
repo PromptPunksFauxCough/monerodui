@@ -66,7 +66,7 @@ def build_status_card() -> None:
     """Build the status card from current `AppState`.
 
     Call `build_status_card.refresh()` from anywhere to re-render
-    after `state` mutates (M2/M4).
+    after `state` mutates.
     """
     # Card matches Kivy: black background, no border, outlined-look.
     with ui.card().classes("w-full").style(
@@ -142,7 +142,7 @@ def build_status_card() -> None:
             state.binary_ready,
         )
 
-        # 4. Monerod Version (populated by M4's VersionChecker; shown
+        # 4. Monerod Version (populated by VersionChecker; shown
         # here in System Status — used to live as a banner inside the
         # Node Statistics card but the row consolidation reads better
         # alongside Architecture / Binary).
@@ -154,7 +154,7 @@ def build_status_card() -> None:
             state.binary_version is not None,
         )
 
-        # 5. Storage (clickable when node is stopped — picker lands in M3)
+        # 5. Storage (clickable — chevron jumps to the settings page)
         if state.storage_ok and state.storage_path:
             storage_display = (
                 f"{state.storage_path} ({state.storage_free_gib:.1f} GiB free)"
@@ -164,7 +164,7 @@ def build_status_card() -> None:
         else:
             storage_display = "Not configured"
         # Chevron always navigates to /settings (Advanced section, where
-        # the data-dir picker lives). M3 ships a proper picker; changes
+        # the data-dir picker lives). The settings page has a proper picker; changes
         # take effect on the next daemon restart. Always-clickable so the
         # affordance isn't a lie when a daemon happens to be running.
         _status_row(

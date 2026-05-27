@@ -1,6 +1,6 @@
 """External-monerod detection helpers.
 
-Historically (M2 first draft) this file held a `ScreenedMonerod` class
+Historically this file held a `ScreenedMonerod` class
 that wrapped `monerodui.libs.ProcessManager` to launch monerod inside
 `screen -dmS monerod`. That was dropped per user decision: ProcessManager
 already auto-appends `--log-file <data_dir>/monerod.log` (see
