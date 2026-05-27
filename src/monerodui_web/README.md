@@ -13,7 +13,7 @@ If you already have the Kivy app installed and configured, the web UI picks up i
 
 ## Requirements
 
-- Linux (Ubuntu 22.04+ / similar). The Kivy app's Android target is out of scope here.
+- **Linux** (Ubuntu 22.04+ or similar). Android is not a target for this package — the parent Kivy app at `src/monerodui/` is what gets bundled into the APK; `monerodui_web/` is in `source.exclude_dirs` in `buildozer.spec`.
 - Python 3.10+.
 - monerod binary somewhere on the system (see [Binary discovery](#binary-discovery) below).
 - A browser. No special version needed — anything from the last few years works.
@@ -63,7 +63,7 @@ src/monerodui_web/
 ├── main.py                # NiceGUI entrypoint: ui.run(), startup hooks,
 │                          # /api/status JSON endpoint, route registration
 ├── core/
-│   ├── __init__.py        # Re-exports state, config, ScreenedMonerod
+│   ├── __init__.py        # Re-exports the `state` and `config` singletons
 │   ├── app_state.py       # Single shared AppState dataclass (the
 │   │                      # source of truth for everything the UI shows)
 │   ├── config_manager.py  # ConfigManager: wraps configparser, port of
@@ -157,7 +157,9 @@ Returns a single snapshot at request time. The server's polling loop refreshes t
   "update_status": {
     "update_available": true,
     "local_version": "0.18.4.5",
-    "remote_version": "0.18.5.0"
+    "remote_version": "0.18.5.0",
+    "remote_hash": "423b49f3658e29f70a1d971667dec924c7ee7a107cfc93440456e28500b471a6",
+    "download_url": "https://downloads.getmonero.org/cli/monero-linux-x64-v0.18.5.0.tar.bz2"
   },
   "node_stats": {
     "nettype": "mainnet",
@@ -206,7 +208,7 @@ Returns a single snapshot at request time. The server's polling loop refreshes t
 
 ### Field notes
 
-- **`update_status`** is `null` until the startup version+update check completes (a few seconds after server start). If you're up-to-date, `update_available` is `false` and the banner is hidden in the UI.
+- **`update_status`** is `null` until the startup version+update check completes (a few seconds after server start). If you're up-to-date, `update_available` is `false` and the banner is hidden in the UI. `download_url` is `null` for unrecognized arches (only `amd64` / `arm64` / `arm32` desktop builds are mapped).
 - **`node_stats`** is `null` until the first successful poll lands (1 second after the first page load). If the poll fails (daemon offline, RPC unreachable), `node_stats` stays at its last good value and `polling.last_poll_error` carries the error string.
 - **`restricted_rpc: true`** indicates monerod is running with `--restricted-rpc`. When true, these fields are **redacted to 0 by monerod itself**, not actually zero:
   - `node_stats.overview.connections_*`
@@ -226,8 +228,6 @@ while true; do
   sleep 30
 done
 ```
-
-(That uses pipes — write it as a script, not a one-liner under the Claude Code Bash hook.)
 
 ## Development
 
@@ -263,7 +263,6 @@ There aren't any (yet). The end-to-end "test" is launch + browse. Settings parit
 - **`--restricted-rpc` redactions show as `*` in the UI** with an always-visible footnote explaining why. See the JSON API section above for the full list of affected fields.
 - **The version banner uses Monero's full release name** (`'Fluorine Fermi' (v0.18.4.5-release)`), not the short form (`v0.18.4.5`). Matches what the Kivy app shows.
 - **Status card collapse is a UI-only toggle**, not persisted to config. Reopening the page resets it to expanded.
-- **`ss -tlnp sport = :PORT`** triggers Claude Code's permission-prompt "parse error" path. If you script around the web UI from inside a Claude session, prefer `lsof -iTCP:PORT -sTCP:LISTEN`.
 
 ## Related files
 

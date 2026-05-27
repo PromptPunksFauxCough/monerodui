@@ -42,6 +42,7 @@ from monerodui.libs import (
     VersionChecker,
 )
 from monerodui_web.core import config, state
+from monerodui_web.core.monero_release import construct_download_url
 from monerodui_web.core.process_adapter import discover_external_monerod_pid
 from monerodui_web.pages import build_dashboard, build_settings_page
 
@@ -481,12 +482,23 @@ def api_status() -> Dict[str, Any]:
     }
 
     # Update banner block (None when no check has run or no update).
+    # Mirrors the UI banner: includes the SHA256 (`remote_hash`) and the
+    # constructed download URL so script consumers don't have to know
+    # the downloads.getmonero.org URL pattern themselves.
     update_status_block: Any = None
     if state.update_status is not None:
+        remote_version = getattr(state.update_status, "remote_version", None)
+        download_url = (
+            construct_download_url(state.arch_name, remote_version)
+            if remote_version
+            else None
+        )
         update_status_block = {
             "update_available": getattr(state.update_status, "update_available", False),
             "local_version": getattr(state.update_status, "local_version", None),
-            "remote_version": getattr(state.update_status, "remote_version", None),
+            "remote_version": remote_version,
+            "remote_hash": getattr(state.update_status, "remote_hash", None) or None,
+            "download_url": download_url,
         }
 
     # Node stats block (None when poller hasn't returned a result yet).

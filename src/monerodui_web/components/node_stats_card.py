@@ -30,6 +30,7 @@ from nicegui import ui
 
 from monerodui.libs import NodeStats
 from monerodui_web.core import state
+from monerodui_web.core.monero_release import construct_download_url
 
 
 # Color palette — matches Kivy theme & status_card.py.
@@ -151,31 +152,6 @@ def _version_banner(version_text: str) -> None:
         ).props("flat dense round size=sm color=white").tooltip(
             "Dismiss (returns on next service restart)"
         )
-
-
-def _construct_download_url(arch: str, version: str) -> Optional[str]:
-    """Build the canonical downloads.getmonero.org URL for this arch +
-    version. Matches the URL monerod itself logs when an update is
-    available (see bitmonero.log lines like "Version X.Y.Z of monero
-    for linux-x64 is available: https://downloads.getmonero.org/...").
-
-    Arch values come from `ArchDetector` ("amd64" / "arm64" / "armhf").
-    Returns None for unrecognized arch — banner will hide the URL row.
-    """
-    # arch values from ArchDetector.detected_arch — see
-    # src/monerodui/libs/arch_detector.py ARCH_MAP.
-    platform_map = {
-        "amd64": "linux-x64",
-        "arm64": "linux-armv8",
-        "arm32": "linux-armv7",
-    }
-    platform = platform_map.get(arch)
-    if platform is None:
-        return None
-    return (
-        f"https://downloads.getmonero.org/cli/"
-        f"monero-{platform}-v{version}.tar.bz2"
-    )
 
 
 def _copy_to_clipboard(text: str, label: str) -> None:
@@ -353,7 +329,7 @@ def build_node_stats_card() -> None:
             # Construct the same download URL monerod itself logs to
             # bitmonero.log when an update is available. Falls back to
             # None (hides the URL row) if arch is unrecognized.
-            download_url = _construct_download_url(state.arch_name, remote)
+            download_url = construct_download_url(state.arch_name, remote)
             _update_banner(local, remote, remote_hash, download_url)
 
         # ---- Offline message OR live grids ----
