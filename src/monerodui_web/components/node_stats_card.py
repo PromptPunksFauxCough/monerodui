@@ -136,18 +136,109 @@ def _version_banner(version_text: str) -> None:
         ui.label("monerod").style(f"color: {DIM_COLOR}; font-size: 11px;")
 
 
-def _update_banner(update_text: str) -> None:
-    """Banner shown when UpdateChecker reports an update is available."""
-    with ui.row().classes("items-center w-full no-wrap").style(
+def _construct_download_url(arch: str, version: str) -> Optional[str]:
+    """Build the canonical downloads.getmonero.org URL for this arch +
+    version. Matches the URL monerod itself logs when an update is
+    available (see bitmonero.log lines like "Version X.Y.Z of monero
+    for linux-x64 is available: https://downloads.getmonero.org/...").
+
+    Arch values come from `ArchDetector` ("amd64" / "arm64" / "armhf").
+    Returns None for unrecognized arch — banner will hide the URL row.
+    """
+    # arch values from ArchDetector.detected_arch — see
+    # src/monerodui/libs/arch_detector.py ARCH_MAP.
+    platform_map = {
+        "amd64": "linux-x64",
+        "arm64": "linux-armv8",
+        "arm32": "linux-armv7",
+    }
+    platform = platform_map.get(arch)
+    if platform is None:
+        return None
+    return (
+        f"https://downloads.getmonero.org/cli/"
+        f"monero-{platform}-v{version}.tar.bz2"
+    )
+
+
+def _copy_to_clipboard(text: str, label: str) -> None:
+    """Copy `text` to the browser clipboard and notify."""
+    js = (
+        "navigator.clipboard && navigator.clipboard.writeText("
+        f"{text!r}"
+        ")"
+    )
+    ui.run_javascript(js)
+    ui.notify(f"{label} copied", type="positive")
+
+
+def _update_banner(
+    local: str,
+    remote: str,
+    remote_hash: str,
+    download_url: Optional[str],
+) -> None:
+    """Banner shown when UpdateChecker reports an update is available.
+
+    Includes:
+      - Version delta ("Current: X.Y.Z --> Latest: A.B.C")
+      - Download URL (clickable, opens in new tab) + copy button
+      - SHA256 hash + copy button
+
+    Mirrors the info monerod itself logs to bitmonero.log on update
+    availability, so the user has everything they need to verify and
+    install the new release without leaving the page.
+    """
+    with ui.row().classes("items-start w-full no-wrap").style(
         f"background-color: {BANNER_BG_UPDATE}; "
         "padding: 12px; border-radius: 8px; gap: 8px;"
     ):
-        ui.icon("error").style("color: #ff4d4d; font-size: 20px;")
-        with ui.column().style("gap: 2px;"):
+        ui.icon("error").style(
+            "color: #ff4d4d; font-size: 20px; margin-top: 2px;"
+        )
+        with ui.column().classes("w-full").style("gap: 4px;"):
             ui.label("Update Available").style(
                 "color: #ffcccc; font-size: 13px; font-weight: 700;"
             )
-            ui.label(update_text).style("color: #ffcccc; font-size: 12px;")
+            ui.label(f"Current: {local}  -->  Latest: {remote}").style(
+                "color: #ffcccc; font-size: 12px;"
+            )
+            if download_url:
+                with ui.row().classes("items-center w-full no-wrap").style(
+                    "gap: 6px; margin-top: 4px;"
+                ):
+                    ui.label("Download:").style(
+                        "color: #ffaaaa; font-size: 11px; font-weight: 600; "
+                        "min-width: 70px;"
+                    )
+                    ui.link(download_url, download_url, new_tab=True).style(
+                        "color: #ffe066; font-size: 11px; "
+                        "word-break: break-all; text-decoration: underline;"
+                    )
+                    ui.button(
+                        icon="content_copy",
+                        on_click=lambda u=download_url: _copy_to_clipboard(u, "URL"),
+                    ).props("flat dense round size=sm color=white").tooltip(
+                        "Copy URL"
+                    )
+            if remote_hash:
+                with ui.row().classes("items-center w-full no-wrap").style(
+                    "gap: 6px;"
+                ):
+                    ui.label("SHA256:").style(
+                        "color: #ffaaaa; font-size: 11px; font-weight: 600; "
+                        "min-width: 70px;"
+                    )
+                    ui.label(remote_hash).style(
+                        "color: #ffe066; font-size: 11px; "
+                        "font-family: monospace; word-break: break-all;"
+                    )
+                    ui.button(
+                        icon="content_copy",
+                        on_click=lambda h=remote_hash: _copy_to_clipboard(h, "SHA256"),
+                    ).props("flat dense round size=sm color=white").tooltip(
+                        "Copy hash"
+                    )
 
 
 def _offline_banner(error: Optional[str]) -> None:
@@ -225,7 +316,12 @@ def build_node_stats_card() -> None:
         if upd is not None and getattr(upd, "update_available", False):
             local = getattr(upd, "local_version", None) or "?"
             remote = getattr(upd, "remote_version", None) or "?"
-            _update_banner(f"Current: {local}  -->  Latest: {remote}")
+            remote_hash = getattr(upd, "remote_hash", "") or ""
+            # Construct the same download URL monerod itself logs to
+            # bitmonero.log when an update is available. Falls back to
+            # None (hides the URL row) if arch is unrecognized.
+            download_url = _construct_download_url(state.arch_name, remote)
+            _update_banner(local, remote, remote_hash, download_url)
 
         # ---- Offline message OR live grids ----
         if is_offline:
