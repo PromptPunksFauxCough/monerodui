@@ -175,6 +175,24 @@ def build_status_card() -> None:
             state_text = "Running (external)"
             state_icon = "play_circle"
             state_ok = True
+        elif state.external_node_busy:
+            # External monerod is alive (pgrep found it) but its RPC is
+            # unresponsive — usually means it's busy syncing. Not an
+            # error state, so don't paint red. If we managed to parse
+            # an ETA from monerod's log, append it to the label.
+            if state.sync_eta_minutes is not None:
+                blocks_part = (
+                    f", {state.sync_blocks_left:,} blocks left"
+                    if state.sync_blocks_left is not None else ""
+                )
+                state_text = (
+                    f"Running (syncing — ~{state.sync_eta_minutes:.0f}m"
+                    f"{blocks_part})"
+                )
+            else:
+                state_text = "Running (syncing)"
+            state_icon = "sync"
+            state_ok = True
         else:
             state_text = "Stopped"
             state_icon = "stop_circle"

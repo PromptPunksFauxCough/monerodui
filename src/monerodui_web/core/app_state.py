@@ -48,6 +48,20 @@ class AppState:
     # "Running (external)" in the UI; Stop is disabled in this case
     # because killing a process we didn't start is out of scope.
     external_node_running: bool = False
+    # Is there an external monerod whose RPC is currently unresponsive?
+    # Most common cause: the daemon is busy syncing (catching up after
+    # downtime) and deprioritizes RPC during catch-up — pgrep finds the
+    # process but RPC times out. Surfaces as "Running (syncing)" so the
+    # user can distinguish this transient state from "Stopped".
+    external_node_busy: bool = False
+    # When external_node_busy is True, these are best-effort enriched
+    # values parsed from the latest "Synced X/Y (...estimated Z minutes
+    # left)" line in monerod's log file. Both fields are None when no
+    # sync line is in the recent log tail (or when external_node_busy
+    # itself is False). Used to enrich the "Running (syncing)" label
+    # with an ETA so the user knows roughly how long to wait.
+    sync_blocks_left: Optional[int] = None
+    sync_eta_minutes: Optional[float] = None
     # Human-readable state string for status_card State row.
     node_state: str = "Stopped"
     # Last completed poll result (or None if never polled / offline).
@@ -112,8 +126,15 @@ class AppState:
 
     @property
     def node_is_running(self) -> bool:
-        """True if a node is responding — owned OR external."""
-        return self.process_owned or self.external_node_running
+        """True if a monerod process is alive — owned, external, or busy
+        syncing. Drives the status-card summary line and other "is there
+        a node here at all?" checks. For finer-grained UI affordances
+        (e.g. whether Stop is enabled) read the underlying flags."""
+        return (
+            self.process_owned
+            or self.external_node_running
+            or self.external_node_busy
+        )
 
 
 # Module-level singleton — imported as `from monerodui_web.core import state`.

@@ -29,8 +29,10 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
 import socket
 import time
+from pathlib import Path
 from typing import Optional
 
 from nicegui import ui
@@ -132,6 +134,14 @@ def build_dashboard() -> None:
 @ui.refreshable
 def build_start_stop_button() -> None:
     """Tri-state Start/Stop. Refresh after state changes."""
+    # Hide the button entirely when an external monerod is syncing —
+    # nothing the user can do here (Stop is a no-op on processes we
+    # didn't spawn, Start would just collide with the live daemon).
+    # The status card already shows "Running (syncing — ~Xm)" so the
+    # state is visible without a useless greyed-out button.
+    if state.external_node_busy and not state.process_owned:
+        return
+
     if state.process_owned:
         ui.button(
             "Stop",
@@ -139,7 +149,8 @@ def build_start_stop_button() -> None:
             on_click=_on_stop_click,
         ).props("color=orange unelevated")
     elif state.external_node_running:
-        # Cannot stop a process we didn't start.
+        # External monerod with responsive RPC — show greyed-out Stop
+        # with a tooltip explaining why it's disabled.
         btn = ui.button(
             "Stop (external)",
             icon="stop_circle",
@@ -291,6 +302,45 @@ def _on_process_state_change(ps: ProcessState) -> None:
         state.node_state = "Stopped" if ps == ProcessState.STOPPED else "Error"
 
 
+# ---- monerod log sync-progress parser -----------------------------------
+
+# Matches lines like:
+#   Synced 3683092/3683298 (99%, 206 left, 16% of total synced, estimated 28.0 minutes left)
+# monerod writes one of these to bitmonero.log every ~2-3 min during catch-up.
+_SYNC_LINE_RE = re.compile(
+    r"Synced (\d+)/(\d+)\s+\(\d+%,\s+(\d+) left,.+estimated\s+([\d.]+)\s+minutes left"
+)
+
+
+def _parse_latest_sync_progress(log_path: Path) -> Optional[dict]:
+    """Tail the last ~64 KB of monerod's log and return the most recent
+    sync-progress info (blocks remaining + ETA minutes). Returns None if
+    the log is unreadable or contains no sync line in the tail window.
+
+    Used only when external_node_busy is True (i.e. RPC is unresponsive
+    and we need an alternate source for sync status). Cheap — bounded
+    read + regex over a small window.
+    """
+    try:
+        with open(log_path, "rb") as f:
+            f.seek(0, 2)  # end
+            size = f.tell()
+            offset = max(0, size - 65536)
+            f.seek(offset)
+            tail = f.read().decode("utf-8", errors="replace")
+    except OSError:
+        return None
+
+    matches = list(_SYNC_LINE_RE.finditer(tail))
+    if not matches:
+        return None
+    m = matches[-1]
+    return {
+        "blocks_left": int(m.group(3)),
+        "eta_minutes": float(m.group(4)),
+    }
+
+
 # ---- Port pre-check helper ----------------------------------------------
 
 
@@ -357,6 +407,12 @@ def _apply_poll_result(result: Optional[NodeStats], err: Optional[str]) -> None:
         state.last_stats = result
         state.last_poll_time = now
         state.last_poll_error = None
+        # Any RPC success clears the busy/syncing flag and its enriched
+        # fields — the daemon is responding, no longer "alive but
+        # unresponsive".
+        state.external_node_busy = False
+        state.sync_blocks_left = None
+        state.sync_eta_minutes = None
         if we_have_live_pid:
             state.process_owned = True
             state.external_node_running = False
@@ -374,17 +430,45 @@ def _apply_poll_result(result: Optional[NodeStats], err: Optional[str]) -> None:
         if we_have_live_pid:
             state.process_owned = True
             state.external_node_running = False
+            state.external_node_busy = False
+            state.sync_blocks_left = None
+            state.sync_eta_minutes = None
             # Keep node_state "Running" so the UI doesn't flicker.
             # last_stats is stale but the offline banner only triggers
             # when last_stats is None — so leave it.
         else:
             state.process_owned = False
-            # Even with no RPC, pgrep might still find an external
-            # monerod that hasn't bound its RPC port. We treat that as
-            # not-externally-running for UI purposes (no RPC = nothing
-            # we can display) but keep the field consistent.
+            state.external_node_running = False
+            # No owned process AND no RPC. Use pgrep to disambiguate:
+            #   - pgrep finds monerod → daemon is alive but RPC is
+            #     unresponsive (almost always "busy syncing after a
+            #     downtime"; monerod deprioritizes RPC during catch-up).
+            #     Surface as "Running (syncing)" so the user knows
+            #     it's transient, not a real outage.
+            #   - pgrep finds nothing → truly stopped.
             ext_pid = discover_external_monerod_pid()
-            state.external_node_running = ext_pid is not None and rpc_reachable
-            if not state.external_node_running:
+            if ext_pid is not None:
+                state.external_node_busy = True
+                state.node_state = "Running (syncing)"
+                # Best-effort: parse the latest sync line from
+                # monerod's log to enrich the label with an ETA. RPC
+                # is unresponsive during sync, so the log is the only
+                # path to this info while we're in the busy state.
+                data_dir = config.get("advanced", "data_dir", fallback="")
+                info = None
+                if data_dir:
+                    info = _parse_latest_sync_progress(
+                        Path(data_dir) / "bitmonero.log"
+                    )
+                if info is not None:
+                    state.sync_blocks_left = info["blocks_left"]
+                    state.sync_eta_minutes = info["eta_minutes"]
+                else:
+                    state.sync_blocks_left = None
+                    state.sync_eta_minutes = None
+            else:
+                state.external_node_busy = False
+                state.sync_blocks_left = None
+                state.sync_eta_minutes = None
                 state.last_stats = None
                 state.node_state = "Stopped"

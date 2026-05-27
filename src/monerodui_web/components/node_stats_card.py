@@ -248,12 +248,37 @@ def _offline_banner(error: Optional[str]) -> None:
         f"background-color: {BANNER_BG_OFFLINE}; padding: 24px; "
         "border-radius: 8px; gap: 4px;"
     ):
-        ui.label("Node is not running").style(
+        # Distinguish "truly stopped" from "alive but syncing". When
+        # external_node_busy is True, the daemon exists (pgrep found it)
+        # but RPC is unresponsive — show a useful message instead of
+        # the misleading "Node is not running".
+        if state.external_node_busy:
+            headline = "Node is syncing"
+            if state.sync_eta_minutes is not None:
+                blocks_part = (
+                    f" ({state.sync_blocks_left:,} blocks left)"
+                    if state.sync_blocks_left is not None else ""
+                )
+                detail = (
+                    f"~{state.sync_eta_minutes:.0f} minutes remaining"
+                    f"{blocks_part}. RPC will return when caught up."
+                )
+            else:
+                detail = (
+                    "Daemon is alive but RPC is busy. Stats will return "
+                    "automatically once it catches up."
+                )
+        else:
+            headline = "Node is not running"
+            detail = f"Last poll: {error}" if error else None
+
+        ui.label(headline).style(
             f"color: {DIM_COLOR}; font-size: 14px;"
         )
-        if error:
-            ui.label(f"Last poll: {error}").style(
-                f"color: {DIM_COLOR}; font-size: 11px; font-style: italic;"
+        if detail:
+            ui.label(detail).style(
+                f"color: {DIM_COLOR}; font-size: 11px; font-style: italic; "
+                "text-align: center; max-width: 480px;"
             )
 
 

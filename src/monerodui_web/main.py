@@ -478,6 +478,14 @@ def api_status() -> Dict[str, Any]:
         "state": state.node_state,
         "process_owned": state.process_owned,
         "external_node_running": state.external_node_running,
+        # external_node_busy: pgrep finds monerod but RPC times out —
+        # usually means the daemon is busy syncing. When True, the
+        # `sync_blocks_left` and `sync_eta_minutes` fields below are
+        # best-effort parses from monerod's log (may be None if not
+        # available); otherwise both are None.
+        "external_node_busy": state.external_node_busy,
+        "sync_blocks_left": state.sync_blocks_left,
+        "sync_eta_minutes": state.sync_eta_minutes,
         "node_is_running": state.node_is_running,
     }
 
