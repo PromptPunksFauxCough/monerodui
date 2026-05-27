@@ -142,7 +142,19 @@ def build_status_card() -> None:
             state.binary_ready,
         )
 
-        # 4. Storage (clickable when node is stopped — picker lands in M3)
+        # 4. Monerod Version (populated by M4's VersionChecker; shown
+        # here in System Status — used to live as a banner inside the
+        # Node Statistics card but the row consolidation reads better
+        # alongside Architecture / Binary).
+        version_display = state.binary_version or "—"
+        _status_row(
+            "verified",
+            "Monerod Version",
+            version_display,
+            state.binary_version is not None,
+        )
+
+        # 5. Storage (clickable when node is stopped — picker lands in M3)
         if state.storage_ok and state.storage_path:
             storage_display = (
                 f"{state.storage_path} ({state.storage_free_gib:.1f} GiB free)"
@@ -171,7 +183,7 @@ def build_status_card() -> None:
             ),
         )
 
-        # 5. State — tri-state, distinguishes owned vs external monerod.
+        # 6. State — tri-state, distinguishes owned vs external monerod.
         # The Stop button in the dashboard footer keys off the same
         # process_owned / external_node_running flags.
         if state.process_owned:

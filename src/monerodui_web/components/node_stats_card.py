@@ -6,7 +6,7 @@ Mirrors `src/monerodui/components/node_stats_card.py` +
 
 Sections (top to bottom):
   1. Header row: title + (right-aligned) network-type tag.
-  2. Version banner (M4 populates; rendered conditionally).
+  2. Update banner (only when an update is available).
   3. Update banner (M4 populates; rendered conditionally).
   4. Offline message (when last_stats is None / status == 'offline').
   5. Sync status line + linear progress bar.
@@ -40,7 +40,6 @@ ERR_COLOR = "#cf6679"     # Material dark error
 DIM_COLOR = "#999999"     # row labels (Kivy [0.6, 0.6, 0.6, 1])
 TEXT_COLOR = "#ffffff"
 HEADER_COLOR = "#ff6600"  # SECTION headers
-BANNER_BG_VERSION = "#262626"
 BANNER_BG_UPDATE = "rgba(204, 51, 51, 0.20)"
 BANNER_BG_OFFLINE = "#1a1a1a"
 
@@ -124,35 +123,10 @@ def _small_stat_cell(value: str, label: str) -> None:
         )
 
 
-def _dismiss_version_banner() -> None:
-    """Hide the version banner for the rest of this server process."""
-    state.version_banner_dismissed = True
-    build_node_stats_card.refresh()
-
-
 def _dismiss_update_banner() -> None:
     """Hide the update banner for the rest of this server process."""
     state.update_banner_dismissed = True
     build_node_stats_card.refresh()
-
-
-def _version_banner(version_text: str) -> None:
-    """Top-of-card banner showing the local monerod binary version."""
-    with ui.row().classes("items-center w-full no-wrap").style(
-        f"background-color: {BANNER_BG_VERSION}; "
-        "padding: 8px 12px; border-radius: 8px; gap: 8px;"
-    ):
-        ui.icon("info").style(f"color: {DIM_COLOR}; font-size: 18px;")
-        ui.label(version_text).style(
-            f"color: #e6e6e6; font-size: 13px;"
-        )
-        ui.space()
-        ui.label("monerod").style(f"color: {DIM_COLOR}; font-size: 11px;")
-        ui.button(
-            icon="close", on_click=_dismiss_version_banner
-        ).props("flat dense round size=sm color=white").tooltip(
-            "Dismiss (returns on next service restart)"
-        )
 
 
 def _copy_to_clipboard(text: str, label: str) -> None:
@@ -330,11 +304,9 @@ def build_node_stats_card() -> None:
 
         ui.separator().style("background-color: #333333;")
 
-        # ---- Version banner (M4 populates state.binary_version) ----
-        # state.version_banner_dismissed is set when the user clicks the
-        # banner's X — persists for the rest of this server process.
-        if state.binary_version and not state.version_banner_dismissed:
-            _version_banner(state.binary_version)
+        # The monerod version is now displayed in the System Status
+        # card (status_card.py "Monerod Version" row), so the dedicated
+        # version banner that used to live here has been removed.
 
         # ---- Update banner (M4 populates state.update_status) ----
         # state.update_banner_dismissed gates this the same way.
