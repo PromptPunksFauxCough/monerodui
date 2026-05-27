@@ -19,6 +19,7 @@ from __future__ import annotations
 from nicegui import ui
 
 from monerodui_web.core import state
+from monerodui_web.core.clipboard import copy_text
 
 # Color palette — matches the Kivy theme.
 OK_COLOR = "#ff6600"        # orange primary (Kivy [1, 0.4, 0, 1])
@@ -213,12 +214,6 @@ def _toggle_status_card_collapsed() -> None:
 
 
 def _copy_to_clipboard(text: str) -> None:
-    """Copy `text` to the browser clipboard via JS."""
-    # navigator.clipboard requires a secure context (localhost counts).
-    js = (
-        "navigator.clipboard && navigator.clipboard.writeText("
-        f"{text!r}"
-        ")"
-    )
-    ui.run_javascript(js)
+    """Copy `text` to the browser clipboard via the shared helper."""
+    copy_text(text)
     ui.notify(f"Copied: {text}", type="positive")

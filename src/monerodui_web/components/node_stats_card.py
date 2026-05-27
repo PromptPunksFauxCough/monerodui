@@ -30,6 +30,7 @@ from nicegui import ui
 
 from monerodui.libs import NodeStats
 from monerodui_web.core import state
+from monerodui_web.core.clipboard import copy_text
 from monerodui_web.core.monero_release import construct_download_url
 
 
@@ -155,13 +156,8 @@ def _version_banner(version_text: str) -> None:
 
 
 def _copy_to_clipboard(text: str, label: str) -> None:
-    """Copy `text` to the browser clipboard and notify."""
-    js = (
-        "navigator.clipboard && navigator.clipboard.writeText("
-        f"{text!r}"
-        ")"
-    )
-    ui.run_javascript(js)
+    """Copy `text` to the browser clipboard via the shared helper."""
+    copy_text(text)
     ui.notify(f"{label} copied", type="positive")
 
 
