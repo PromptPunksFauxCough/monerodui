@@ -100,6 +100,13 @@ class AppState:
     # True = status card body hidden, only header + summary shown.
     # Toggled by the chevron button in the status card header.
     status_card_collapsed: bool = False
+    # User-dismissed banners. Each banner has an "X" button that flips
+    # the corresponding flag and refreshes the stats card. Flags are
+    # process-lifetime (reset by `service monerodui-web restart` since
+    # AppState is re-instantiated at server startup); they intentionally
+    # don't persist across restarts.
+    version_banner_dismissed: bool = False
+    update_banner_dismissed: bool = False
 
     # ---- Derived ----
 

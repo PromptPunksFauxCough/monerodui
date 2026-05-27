@@ -122,6 +122,18 @@ def _small_stat_cell(value: str, label: str) -> None:
         )
 
 
+def _dismiss_version_banner() -> None:
+    """Hide the version banner for the rest of this server process."""
+    state.version_banner_dismissed = True
+    build_node_stats_card.refresh()
+
+
+def _dismiss_update_banner() -> None:
+    """Hide the update banner for the rest of this server process."""
+    state.update_banner_dismissed = True
+    build_node_stats_card.refresh()
+
+
 def _version_banner(version_text: str) -> None:
     """Top-of-card banner showing the local monerod binary version."""
     with ui.row().classes("items-center w-full no-wrap").style(
@@ -134,6 +146,11 @@ def _version_banner(version_text: str) -> None:
         )
         ui.space()
         ui.label("monerod").style(f"color: {DIM_COLOR}; font-size: 11px;")
+        ui.button(
+            icon="close", on_click=_dismiss_version_banner
+        ).props("flat dense round size=sm color=white").tooltip(
+            "Dismiss (returns on next service restart)"
+        )
 
 
 def _construct_download_url(arch: str, version: str) -> Optional[str]:
@@ -197,9 +214,18 @@ def _update_banner(
             "color: #ff4d4d; font-size: 20px; margin-top: 2px;"
         )
         with ui.column().classes("w-full").style("gap: 4px;"):
-            ui.label("Update Available").style(
-                "color: #ffcccc; font-size: 13px; font-weight: 700;"
-            )
+            with ui.row().classes("items-center w-full no-wrap").style(
+                "gap: 4px;"
+            ):
+                ui.label("Update Available").style(
+                    "color: #ffcccc; font-size: 13px; font-weight: 700;"
+                )
+                ui.space()
+                ui.button(
+                    icon="close", on_click=_dismiss_update_banner
+                ).props("flat dense round size=sm color=white").tooltip(
+                    "Dismiss (returns on next service restart)"
+                )
             ui.label(f"Current: {local}  -->  Latest: {remote}").style(
                 "color: #ffcccc; font-size: 12px;"
             )
@@ -308,12 +334,19 @@ def build_node_stats_card() -> None:
         ui.separator().style("background-color: #333333;")
 
         # ---- Version banner (M4 populates state.binary_version) ----
-        if state.binary_version:
+        # state.version_banner_dismissed is set when the user clicks the
+        # banner's X — persists for the rest of this server process.
+        if state.binary_version and not state.version_banner_dismissed:
             _version_banner(state.binary_version)
 
         # ---- Update banner (M4 populates state.update_status) ----
+        # state.update_banner_dismissed gates this the same way.
         upd = state.update_status
-        if upd is not None and getattr(upd, "update_available", False):
+        if (
+            upd is not None
+            and getattr(upd, "update_available", False)
+            and not state.update_banner_dismissed
+        ):
             local = getattr(upd, "local_version", None) or "?"
             remote = getattr(upd, "remote_version", None) or "?"
             remote_hash = getattr(upd, "remote_hash", "") or ""
