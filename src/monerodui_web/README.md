@@ -262,7 +262,7 @@ There aren't any (yet). The end-to-end "test" is launch + browse. Settings parit
 
 - **`--restricted-rpc` redactions show as `*` in the UI** with an always-visible footnote explaining why. See the JSON API section above for the full list of affected fields.
 - **The version banner uses Monero's full release name** (`'Fluorine Fermi' (v0.18.4.5-release)`), not the short form (`v0.18.4.5`). Matches what the Kivy app shows.
-- **Status card collapse is a UI-only toggle**, not persisted to config. Reopening the page resets it to expanded.
+- **Status card collapse** is a server-side toggle: it survives page reloads and new tabs (all tabs see the same state) but resets to expanded on `service monerodui-web restart`. Not persisted to disk.
 
 ## Related files
 
