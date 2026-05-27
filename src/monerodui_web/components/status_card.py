@@ -161,7 +161,13 @@ def build_status_card() -> None:
             state.storage_ok,
             trailing_icon="chevron_right",
             trailing_disabled=False,
-            trailing_on_click=lambda: ui.navigate.to("/settings"),
+            # Land on the Advanced section with the data_dir input
+            # briefly flashed — much more useful than dumping the user
+            # at the top of the settings page. See settings_route() for
+            # the focus query-param handling.
+            trailing_on_click=lambda: ui.navigate.to(
+                "/settings?focus=advanced.data_dir"
+            ),
         )
 
         # 5. State — tri-state, distinguishes owned vs external monerod.

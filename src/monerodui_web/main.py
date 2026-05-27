@@ -439,10 +439,16 @@ def index() -> None:
 
 
 @ui.page("/settings")
-def settings_route() -> None:
-    """Render the full settings page (~70-field parity, M3)."""
+def settings_route(focus: str = "") -> None:
+    """Render the full settings page (~70-field parity, M3).
+
+    Optional `?focus=<section>.<field>` query param: after the page
+    renders, scrolls to the named section and briefly flashes the
+    named field. Used by the Storage-row chevron in the status card
+    to land users directly on `advanced.data_dir`.
+    """
     ui.dark_mode().enable()
-    build_settings_page()
+    build_settings_page(focus=focus)
 
 
 # ---- JSON API endpoint ---------------------------------------------------

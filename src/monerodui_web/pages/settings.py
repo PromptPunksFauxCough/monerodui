@@ -513,11 +513,39 @@ def _open_dir_picker(data_dir_input: ui.input) -> None:
 # ---- Page builder -----------------------------------------------------------
 
 
-def build_settings_page() -> None:
-    """Render the `/settings` route inside the active NiceGUI page."""
+def build_settings_page(focus: str = "") -> None:
+    """Render the `/settings` route inside the active NiceGUI page.
+
+    `focus` (optional): "<section>.<field>" — after render, scroll to
+    that section, force-expand it if needed, and briefly flash the
+    field input. Passed in from the `/settings` route via query param.
+    """
     # Maps (section_key, field_key) -> widget reference, so the Save
     # handler can read every current value uniformly.
     widget_refs: dict[tuple[str, str], Any] = {}
+
+    # Inject the CSS for the field-flash animation once per page load.
+    # Uses orange (#ff6600) to match the rest of the theme.
+    ui.add_head_html(
+        """
+<style>
+@keyframes monerodui-flash-kf {
+  0%   { background-color: rgba(255, 102, 0, 0.45); }
+  100% { background-color: transparent; }
+}
+.monerodui-flash {
+  animation: monerodui-flash-kf 2s ease-out;
+  border-radius: 6px;
+}
+</style>
+"""
+    )
+
+    # Parse focus: must be "<section>.<field>" for both halves to apply.
+    focus_section: str = ""
+    focus_field: str = ""
+    if "." in focus:
+        focus_section, focus_field = focus.split(".", 1)
 
     with ui.column().classes("w-full").style(
         "max-width: 900px; margin: 0 auto; padding: 16px; gap: 16px;"
@@ -548,12 +576,20 @@ def build_settings_page() -> None:
             title: str = section["title"]
             fields: list[dict[str, Any]] = section["fields"]
 
-            expanded = section_key in EXPANDED_BY_DEFAULT
+            # If this is the focused section, force-expand it even if
+            # it's normally collapsed (e.g. "advanced" is expanded by
+            # default, but other targets may not be).
+            expanded = (
+                section_key in EXPANDED_BY_DEFAULT
+                or section_key == focus_section
+            )
             with ui.expansion(
                 title,
                 icon="settings",
                 value=expanded,
-            ).classes("w-full").props("header-class=text-orange") as exp:
+            ).classes("w-full").props(
+                f"header-class=text-orange id=monerodui-section-{section_key}"
+            ) as exp:
                 # Tighten internal layout.
                 exp.style("background: #1f1f1f; border: 1px solid #333; border-radius: 6px;")
                 with ui.column().classes("w-full").style("padding: 8px 12px; gap: 8px;"):
@@ -567,6 +603,34 @@ def build_settings_page() -> None:
                 icon="save",
                 on_click=lambda: _on_save(widget_refs),
             ).props("color=orange unelevated size=lg")
+
+    # ---- Post-render: scroll + flash if focus was requested ----
+    if focus_section and focus_field:
+        widget = widget_refs.get((focus_section, focus_field))
+        # Quasar widgets render to <div id="qXXXX">; grab that id and
+        # use it for both the scroll target and the flash class.
+        widget_id = widget.id if widget is not None else ""
+        section_dom_id = f"monerodui-section-{focus_section}"
+        # Run after a short delay so the DOM is settled.
+        ui.timer(
+            0.2,
+            lambda: ui.run_javascript(
+                f"""
+                (function() {{
+                    const section = document.getElementById('{section_dom_id}');
+                    if (section) {{
+                        section.scrollIntoView({{behavior: 'smooth', block: 'start'}});
+                    }}
+                    const field = document.getElementById('c{widget_id}');
+                    if (field) {{
+                        field.classList.add('monerodui-flash');
+                        setTimeout(() => field.classList.remove('monerodui-flash'), 2100);
+                    }}
+                }})();
+                """
+            ),
+            once=True,
+        )
 
 
 def _render_field(
