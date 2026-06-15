@@ -80,6 +80,13 @@ class UpdateChecker:
                 return "monero:android-armv8:"
             else:
                 return "monero:android-armv7:"
+        # Desktop — pick TXT-record platform string by detected arch.
+        # Falls back to linux-x64 for unrecognized arches (matches the
+        # pre-fix behavior, so x86_64 boxes are unaffected).
+        if self._arch == "arm64":
+            return "monero:linux-armv8:"
+        if self._arch == "arm32":
+            return "monero:linux-armv7:"
         return "monero:linux-x64:"
 
     def _fetch_remote_version(self) -> Optional[Tuple[str, str]]:
