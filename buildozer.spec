@@ -5,7 +5,7 @@ package.domain = org.monerodui
 source.dir = src
 source.include_exts = py,png,jpg,kv,atlas,json,svg,ini,whl,so,java
 source.include_patterns = assets/*,screens/**/*.py,services/*.py,utils/*,ui/**/*.kv,monerodui/service.py
-source.exclude_dirs = data,.buildozer,tests,.venv,venv,__pycache__
+source.exclude_dirs = data,.buildozer,tests,.venv,venv,__pycache__,monerodui_web
 version = 0.1.0
 
 requirements = python3,kivy,https://github.com/kivymd/KivyMD/archive/master.zip,pillow,materialyoucolor,asynckivy,asyncgui,Kivy-Garden,android,setuptools,wheel,plyer,monerod
