@@ -163,15 +163,42 @@ download_all_binaries() {
     download_desktop_binaries
 }
 
+#patch_manifest() {
+#    print_info "Patching AndroidManifest.tmpl.xml..."
+#
+#    MANIFEST="${SCRIPT_DIR}/.buildozer/android/platform/python-for-android/pythonforandroid/bootstraps/sdl2/build/templates/AndroidManifest.tmpl.xml"
+#
+#    if [ ! -f "$MANIFEST" ]; then
+#        print_error "Manifest not found. Run initial build first."
+#        exit 1
+#    fi
+#
+#    # Clean previous patches
+#    sed -i '/BootReceiver/d' "$MANIFEST"
+#
+#    # Add receiver only
+#    sed -i 's|</application>|    <receiver android:name="org.monerodui.monerodui.BootReceiver" android:enabled="true" android:exported="true">\n        <intent-filter>\n            <action android:name="android.intent.action.BOOT_COMPLETED"/>\n        </intent-filter>\n    </receiver>\n    </application>|' "$MANIFEST"
+#
+#    print_info "Manifest patched."
+#}
+
 patch_manifest() {
     print_info "Patching AndroidManifest.tmpl.xml..."
 
-    MANIFEST="${SCRIPT_DIR}/.buildozer/android/platform/python-for-android/pythonforandroid/bootstraps/sdl2/build/templates/AndroidManifest.tmpl.xml"
+    MANIFEST_DIR="${SCRIPT_DIR}/.buildozer/android/platform/build-arm64-v8a_armeabi-v7a/dists/monerodui/templates"
+    MANIFEST="${MANIFEST_DIR}/AndroidManifest.tmpl.xml"
 
     if [ ! -f "$MANIFEST" ]; then
+        print_info "Looking for fallback manifest paths..."
+        MANIFEST=$(find "${SCRIPT_DIR}/.buildozer/" -name "AndroidManifest.tmpl.xml" | head -n 1)
+    fi
+
+    if [ -z "$MANIFEST" ] || [ ! -f "$MANIFEST" ]; then
         print_error "Manifest not found. Run initial build first."
         exit 1
     fi
+
+    print_info "Found manifest at: $MANIFEST"
 
     # Clean previous patches
     sed -i '/BootReceiver/d' "$MANIFEST"
@@ -179,7 +206,7 @@ patch_manifest() {
     # Add receiver only
     sed -i 's|</application>|    <receiver android:name="org.monerodui.monerodui.BootReceiver" android:enabled="true" android:exported="true">\n        <intent-filter>\n            <action android:name="android.intent.action.BOOT_COMPLETED"/>\n        </intent-filter>\n    </receiver>\n    </application>|' "$MANIFEST"
 
-    print_info "Manifest patched."
+    print_info "Manifest patched successfully."
 }
 
 setup_venv() {
