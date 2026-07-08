@@ -202,7 +202,7 @@ install_android_deps() {
     sudo apt install -y \
         git zip unzip openjdk-17-jdk python3-pip python3-venv \
         autoconf libtool pkg-config zlib1g-dev \
-        libncurses5-dev libncursesw5-dev libtinfo6 \
+        libncurses-dev libtinfo6 libltdl-dev \
         cmake libffi-dev libssl-dev
     cd "$SCRIPT_DIR"
     
