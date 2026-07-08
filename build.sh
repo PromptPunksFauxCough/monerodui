@@ -61,14 +61,14 @@ download_android_binaries() {
 
     if [ ! -f "$DOWNLOAD_DIR/monero-arm8.tar.bz2" ]; then
         print_info "Downloading arm8..."
-#        curl -sL -o "$DOWNLOAD_DIR/monero-arm8.tar.bz2" https://downloads.getmonero.org/cli/androidarm8
-        curl -sL -o "$DOWNLOAD_DIR/monero-arm8.tar.bz2" https://downloads.getmonero.org/cli/monero-android-armv8-v0.18.3.3.tar.bz2
+        curl -sL -o "$DOWNLOAD_DIR/monero-arm8.tar.bz2" https://downloads.getmonero.org/cli/androidarm8
+#        curl -sL -o "$DOWNLOAD_DIR/monero-arm8.tar.bz2" https://downloads.getmonero.org/cli/monero-android-armv8-v0.18.3.3.tar.bz2
     fi
 
     if [ ! -f "$DOWNLOAD_DIR/monero-arm7.tar.bz2" ]; then
         print_info "Downloading arm7..."
-#        curl -sL -o "$DOWNLOAD_DIR/monero-arm7.tar.bz2" https://downloads.getmonero.org/cli/androidarm7
-        curl -sL -o "$DOWNLOAD_DIR/monero-arm7.tar.bz2" https://downloads.getmonero.org/cli/monero-android-armv7-v0.18.3.3.tar.bz2
+        curl -sL -o "$DOWNLOAD_DIR/monero-arm7.tar.bz2" https://downloads.getmonero.org/cli/androidarm7
+#        curl -sL -o "$DOWNLOAD_DIR/monero-arm7.tar.bz2" https://downloads.getmonero.org/cli/monero-android-armv7-v0.18.3.3.tar.bz2
     fi
 
     if [ ! -f "$DOWNLOAD_DIR/hashes.txt" ]; then
@@ -79,18 +79,18 @@ download_android_binaries() {
     print_info "Importing GPG key..."
     curl -s https://raw.githubusercontent.com/monero-project/monero/master/utils/gpg_keys/binaryfate.asc | gpg --import
 
-#    print_info "Verifying hashes.txt signature..."
-#    gpg --verify "$DOWNLOAD_DIR/hashes.txt" || {
-#        print_error "GPG signature verification failed"
-#        exit 1
-#    }
-#
-#    print_info "Verifying SHA256 hashes..."
-#    ARM8_HASH=$(sha256sum "$DOWNLOAD_DIR/monero-arm8.tar.bz2" | awk '{print $1}')
-#    ARM7_HASH=$(sha256sum "$DOWNLOAD_DIR/monero-arm7.tar.bz2" | awk '{print $1}')
-#
-#    grep -q "$ARM8_HASH" "$DOWNLOAD_DIR/hashes.txt" || { print_error "arm8 hash mismatch"; exit 1; }
-#    grep -q "$ARM7_HASH" "$DOWNLOAD_DIR/hashes.txt" || { print_error "arm7 hash mismatch"; exit 1; }
+    print_info "Verifying hashes.txt signature..."
+    gpg --verify "$DOWNLOAD_DIR/hashes.txt" || {
+        print_error "GPG signature verification failed"
+        exit 1
+    }
+
+    print_info "Verifying SHA256 hashes..."
+    ARM8_HASH=$(sha256sum "$DOWNLOAD_DIR/monero-arm8.tar.bz2" | awk '{print $1}')
+    ARM7_HASH=$(sha256sum "$DOWNLOAD_DIR/monero-arm7.tar.bz2" | awk '{print $1}')
+
+    grep -q "$ARM8_HASH" "$DOWNLOAD_DIR/hashes.txt" || { print_error "arm8 hash mismatch"; exit 1; }
+    grep -q "$ARM7_HASH" "$DOWNLOAD_DIR/hashes.txt" || { print_error "arm7 hash mismatch"; exit 1; }
 
     print_info "Hashes verified."
 
@@ -119,8 +119,8 @@ download_desktop_binaries() {
 
     if [ ! -f "$DOWNLOAD_DIR/monero-linux64.tar.bz2" ]; then
         print_info "Downloading linux64..."
-#        curl -sL -o "$DOWNLOAD_DIR/monero-linux64.tar.bz2" https://downloads.getmonero.org/cli/linux64
-        curl -sL -o "$DOWNLOAD_DIR/monero-linux64.tar.bz2" https://downloads.getmonero.org/cli/monero-linux-x64-v0.18.3.3.tar.bz2
+        curl -sL -o "$DOWNLOAD_DIR/monero-linux64.tar.bz2" https://downloads.getmonero.org/cli/linux64
+#        curl -sL -o "$DOWNLOAD_DIR/monero-linux64.tar.bz2" https://downloads.getmonero.org/cli/monero-linux-x64-v0.18.3.3.tar.bz2
     fi
 
     if [ ! -f "$DOWNLOAD_DIR/hashes.txt" ]; then
@@ -131,20 +131,20 @@ download_desktop_binaries() {
     print_info "Importing GPG key..."
     curl -s https://raw.githubusercontent.com/monero-project/monero/master/utils/gpg_keys/binaryfate.asc | gpg --import
 
-#    print_info "Verifying hashes.txt signature..."
-#    gpg --verify "$DOWNLOAD_DIR/hashes.txt" || {
-#        print_error "GPG signature verification failed"
-#        exit 1
-#    }
-#
-#    print_info "Verifying SHA256 hash..."
-#    LINUX_HASH=$(sha256sum "$DOWNLOAD_DIR/monero-linux64.tar.bz2" | awk '{print $1}')
-#
-#    grep -q "$LINUX_HASH" "$DOWNLOAD_DIR/hashes.txt" || { print_error "linux64 hash mismatch"; exit 1; }
-#
-#    print_info "Hash verified."
-#
-#    print_info "Extracting binary..."
+    print_info "Verifying hashes.txt signature..."
+    gpg --verify "$DOWNLOAD_DIR/hashes.txt" || {
+        print_error "GPG signature verification failed"
+        exit 1
+    }
+
+    print_info "Verifying SHA256 hash..."
+    LINUX_HASH=$(sha256sum "$DOWNLOAD_DIR/monero-linux64.tar.bz2" | awk '{print $1}')
+
+    grep -q "$LINUX_HASH" "$DOWNLOAD_DIR/hashes.txt" || { print_error "linux64 hash mismatch"; exit 1; }
+
+    print_info "Hash verified."
+
+    print_info "Extracting binary..."
     rm -rf "$DOWNLOAD_DIR"/monero-x86_64-linux-gnu-*
     tar -xjf "$DOWNLOAD_DIR/monero-linux64.tar.bz2" -C "$DOWNLOAD_DIR"
 
@@ -202,7 +202,7 @@ install_android_deps() {
     sudo apt install -y \
         git zip unzip openjdk-17-jdk python3-pip python3-venv \
         autoconf libtool pkg-config zlib1g-dev \
-        libncurses5-dev libncursesw5-dev libtinfo5 \
+        libncurses5-dev libncursesw5-dev libtinfo6 \
         cmake libffi-dev libssl-dev
     cd "$SCRIPT_DIR"
     
