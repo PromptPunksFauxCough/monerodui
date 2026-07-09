@@ -1,0 +1,137 @@
+"""Shared mutable application state for the web UI.
+
+All UI components read from the module-level `state` singleton via
+NiceGUI `@ui.refreshable` functions; background tasks (process state
+callbacks, stats poller) write to it. Mutation is plain attribute
+assignment — no observers.
+
+There are no deployment-specific Configuration Variables in this file;
+all values are runtime-derived from config + system probes.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Optional
+
+# Imported from the existing libs package (which has zero Kivy deps).
+# Importing the type here keeps `state.last_stats` correctly typed.
+from monerodui.libs import NodeStats  # noqa: F401  (re-exported via type hint)
+
+
+@dataclass
+class AppState:
+    """Singleton holding all UI-observable state.
+
+    Where each field is written:
+      - process_owned / external_node_running / external_node_busy /
+        node_state / last_stats / last_poll_time / last_poll_error:
+            stats poller + process_adapter (per-tick in dashboard.py).
+      - binary_version / update_status:
+            VersionChecker / UpdateChecker (one-shot on startup).
+      - arch_*, binary_*, storage_*, device_ip:
+            populated once at startup by `main.initialize()`.
+
+    `node_is_running` is a *derived* property: true if EITHER we own the
+    process OR an external monerod is reachable via RPC. Use the two
+    underlying flags to drive UI affordances (e.g. disable Stop when
+    external-only).
+    """
+
+    # ---- Node lifecycle ----
+    # Did *we* spawn this monerod? Drives whether Stop is enabled.
+    process_owned: bool = False
+    # Is there an RPC-reachable monerod we did NOT spawn? Surfaces as
+    # "Running (external)" in the UI; Stop is disabled in this case
+    # because killing a process we didn't start is out of scope.
+    external_node_running: bool = False
+    # Is there an external monerod whose RPC is currently unresponsive?
+    # Most common cause: the daemon is busy syncing (catching up after
+    # downtime) and deprioritizes RPC during catch-up — pgrep finds the
+    # process but RPC times out. Surfaces as "Running (syncing)" so the
+    # user can distinguish this transient state from "Stopped".
+    external_node_busy: bool = False
+    # When external_node_busy is True, these are best-effort enriched
+    # values parsed from the latest "Synced X/Y (...estimated Z minutes
+    # left)" line in monerod's log file. Both fields are None when no
+    # sync line is in the recent log tail (or when external_node_busy
+    # itself is False). Used to enrich the "Running (syncing)" label
+    # with an ETA so the user knows roughly how long to wait.
+    sync_blocks_left: Optional[int] = None
+    sync_eta_minutes: Optional[float] = None
+    # Human-readable state string for status_card State row.
+    node_state: str = "Stopped"
+    # Last completed poll result (or None if never polled / offline).
+    last_stats: Optional[NodeStats] = None
+    # Timestamp (time.time()) of the most recent successful poll —
+    # used for "staleness" display in the UI.
+    last_poll_time: Optional[float] = None
+    # Latest poll error message (or None if last poll succeeded). Shown
+    # in the offline banner so the user can see *why* the node looks
+    # offline (connection refused vs. timeout vs. RPC error).
+    last_poll_error: Optional[str] = None
+    # Generic "last error" (start-failure message etc.) — populated by
+    # process_adapter on failed start/stop.
+    last_error: Optional[str] = None
+
+    # ---- Live service references (populated from main.initialize) ----
+    # Typed as Any to avoid an import cycle; concrete types are
+    # monerodui.libs.ProcessManager, NodeStatsPoller, VersionChecker,
+    # UpdateChecker.
+    process_manager: Optional[Any] = None
+    node_stats_poller: Optional[Any] = None
+    version_checker: Optional[Any] = None
+    update_checker: Optional[Any] = None
+
+    # ---- Binary metadata (written by the version + update checks) ----
+    binary_version: Optional[str] = None
+    update_status: Optional[Any] = None  # UpdateStatus from libs.update_checker
+
+    # ---- Arch / binary readiness (populated at startup) ----
+    arch_supported: bool = False
+    arch_name: str = "Unknown"
+    binary_path: Optional[Path] = None
+    binary_ready: bool = False
+
+    # ---- Storage check (populated at startup) ----
+    storage_path: Optional[str] = None
+    storage_free_gib: float = 0.0
+    storage_ok: bool = False
+    # One-shot flag so the low-storage warning toast fires exactly once
+    # across the server's lifetime — first browser to connect to the
+    # dashboard sees it; subsequent reloads / tabs do not. Reset to
+    # False if you want it to re-fire (e.g. after a config change that
+    # lowers free space).
+    storage_warning_shown: bool = False
+
+    # ---- Network (populated at startup) ----
+    device_ip: str = "Unknown"
+
+    # ---- UI toggles ----
+    # True = status card body hidden, only header + summary shown.
+    # Toggled by the chevron button in the status card header.
+    status_card_collapsed: bool = False
+    # User-dismissed update banner. Has an "X" button that flips the
+    # flag and refreshes the stats card. Process-lifetime (reset by
+    # `service monerodui-web restart` since AppState is re-instantiated
+    # at server startup) — intentionally doesn't persist across restarts.
+    update_banner_dismissed: bool = False
+
+    # ---- Derived ----
+
+    @property
+    def node_is_running(self) -> bool:
+        """True if a monerod process is alive — owned, external, or busy
+        syncing. Drives the status-card summary line and other "is there
+        a node here at all?" checks. For finer-grained UI affordances
+        (e.g. whether Stop is enabled) read the underlying flags."""
+        return (
+            self.process_owned
+            or self.external_node_running
+            or self.external_node_busy
+        )
+
+
+# Module-level singleton — imported as `from monerodui_web.core import state`.
+state: AppState = AppState()

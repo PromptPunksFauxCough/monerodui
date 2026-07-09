@@ -1,3 +1,37 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "monerodui"
+version = "0.1.0"
+description = "monerod UI — Kivy desktop app and NiceGUI web companion for managing a monerod node."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+authors = [
+    { name = "Terry A. Davis", email = "terry@monerodui.org" },
+]
+# Kivy desktop deps live under [tool.briefcase.app.monerodui.requires];
+# the [project] table here is intentionally lean so `pip install
+# .[web]` can install the web UI without dragging Kivy in.
+dependencies = []
+
+[project.optional-dependencies]
+web = [
+    "nicegui>=2.0.0",
+]
+
+[project.scripts]
+monerodui-web = "monerodui_web.main:main"
+
+[project.urls]
+Homepage = "https://monerod.org/monerodui"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["monerodui*", "monerodui_web*"]
+
 [tool.briefcase]
 project_name = "monerod UI"
 bundle = "org.monerodui"
